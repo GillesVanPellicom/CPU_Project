@@ -34,43 +34,58 @@ def lexer(preparedFile):
     labels = []
     instrl = []
     for i in range(len(preparedFile)):
-
-        if preparedFile[i][-1] == ':':
+        # FIXME correct line numbers
+        s = preparedFile[i]
+        if s.find(':') != -1:
             # label
-            labels.append(preparedFile[i])
+            labels.append(s.replace(' ', ''))
 
-        elif preparedFile[i] == "noop":
+        elif s.replace(' ', '') == "noop":
             # noop - 00000
             # Append to instruction list
             instrl.append("00000 000000000 000000000 000000000")
 
-        elif preparedFile[i][0:4] == "add ":
+        elif s.find('add ') != -1:
             # add - 00001
             # Generate instruction and append to instruction list
-            instrl.append(generateBinaryInstr(preparedFile[i], "00001", 4, i + 1))
+            instrl.append(generateBinaryInstr(s, "00001", 3, i + 1))
 
-        elif preparedFile[i][0:5] == "addi ":
+        elif s.find('addi ') != -1:
             # addi - 00010
             # append to instruction list
-            instrl.append(generateImmediateInstr(preparedFile[i], "00010", 5, i + 1))
+            instrl.append(generateImmediateInstr(s, "00010", 4, i + 1))
 
-        elif preparedFile[i][0:3] == "or ":
-            # or - 00011
+        elif s.find('xor ') != -1:
+            # check for xor before or since find() is used
+            # xor - 00011
             # Generate instruction and append to instruction list
-            instrl.append(generateBinaryInstr(preparedFile[i], "00011", 3, i + 1))
+            instrl.append(generateBinaryInstr(s, "00011", 3, i + 1))
 
-        elif preparedFile[i][0:4] == "ori ":
+        elif s.find('ori ') != -1:
             # ori - 00100
             # Generate instruction and append to instruction list
-            instrl.append(generateImmediateInstr(preparedFile[i], "00100", 4, i + 1))
+            instrl.append(generateImmediateInstr(s, "00100", 3, i + 1))
+
+        elif s.find('or ') != -1:
+            # or - 00101
+            # Generate instruction and append to instruction list
+            instrl.append(generateBinaryInstr(s, "00101", 2, i + 1))
+
+        elif s.find('and ') != -1:
+            # and - 00110
+            # Generate instruction and append to instruction list
+            instrl.append(generateBinaryInstr(s, "00110", 3, i + 1))
+        elif s.find('not ') != -1:
+            # and - 00110
+            # Generate instruction and append to instruction list
+            instrl.append(generateUnaryInstr(s, "00111", 3, i + 1))
 
     print(instrl)
 
 
 def generateBinaryInstr(s, opcode, instrLength, line):
-    # or - 00011
     ins = opcode
-    args = s[instrLength:].replace(' ', '').split(',')
+    args = s[instrLength + 1:].replace(' ', '').split(',')
 
     # check argument count
     if len(args) != 3:
@@ -85,9 +100,24 @@ def generateBinaryInstr(s, opcode, instrLength, line):
     return ins
 
 
+def generateUnaryInstr(s, opcode, instrLength, line):
+    ins = opcode
+    args = s[instrLength + 1:].replace(' ', '').split(',')
+
+    # check argument count
+    if len(args) != 2:
+        raise SyntaxError(consolePrefix(line) + "Invalid argument(s).")
+
+    # generate instruction
+    ins += ' ' + regNameToAddress(args[0], line) + ' ' + regNameToAddress(args[1], line) + ' ' + '0' * 9
+
+    # return instruction
+    return ins
+
+
 def generateImmediateInstr(s, opcode, instrLength, line):
     ins = opcode
-    args = s[instrLength:].replace(' ', '').split(',')
+    args = s[instrLength + 1:].replace(' ', '').split(',')
 
     # check argument count
     if len(args) != 2:
