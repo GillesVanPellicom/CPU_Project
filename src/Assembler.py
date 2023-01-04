@@ -2,7 +2,7 @@
 
 import re
 
-debug = False
+debug = True
 
 
 def prepareFile(fileSrc):
@@ -34,7 +34,6 @@ def lexer(preparedFile):
     labels = []
     instrl = []
     for i in range(len(preparedFile)):
-        error = False
 
         if preparedFile[i][-1] == ':':
             # label
@@ -42,66 +41,69 @@ def lexer(preparedFile):
 
         elif preparedFile[i] == "noop":
             # noop - 00000
+            # Append to instruction list
             instrl.append("00000 000000000 000000000 000000000")
 
         elif preparedFile[i][0:4] == "add ":
             # add - 00001
-            ins = "00001"
-            args = preparedFile[i][4:].replace(' ', '').split(',')
-
-            # check argument count
-            if len(args) != 3:
-                error = True
-
-            # generate instruction
-            ins += ' ' + regNameToAddress(args[0], i + 1) + ' ' + regNameToAddress(args[1],
-                                                                                   i + 1) + ' ' + regNameToAddress(
-                args[2], i + 1)
-            # append to instruction list
-            instrl.append(ins)
+            # Generate instruction and append to instruction list
+            instrl.append(generateBinaryInstr(preparedFile[i], "00001", 4, i + 1))
 
         elif preparedFile[i][0:5] == "addi ":
             # addi - 00010
-            ins = "00010"
-            args = preparedFile[i][5:].replace(' ', '').split(',')
-
-            # check argument count
-            if len(args) != 2:
-                error = True
-
-            # FIXME 2's complement
-            # check if immediate is too large
-            if int(args[1]) > pow(2, 16) - 1:
-                raise SyntaxError(consolePrefix(i + 1) + "Immediate too large")
-
-            # FIXME 2's complement
-            # generate instruction
-            ins += ' ' + regNameToAddress(args[0], i + 1) + ' ' + format(int(args[1]), '018b')
-
             # append to instruction list
-            instrl.append(ins)
+            instrl.append(generateImmediateInstr(preparedFile[i], "00010", 5, i + 1))
 
         elif preparedFile[i][0:3] == "or ":
             # or - 00011
-            ins = "00011"
-            args = preparedFile[i][3:].replace(' ', '').split(',')
+            # Generate instruction and append to instruction list
+            instrl.append(generateBinaryInstr(preparedFile[i], "00011", 3, i + 1))
 
-            # check argument count
-            if len(args) != 3:
-                error = True
+        elif preparedFile[i][0:4] == "ori ":
+            # ori - 00100
+            # Generate instruction and append to instruction list
+            instrl.append(generateImmediateInstr(preparedFile[i], "00100", 4, i + 1))
 
-            # generate instruction
-            ins += ' ' + regNameToAddress(args[0], i + 1) + ' ' + regNameToAddress(args[1],
-                                                                                   i + 1) + ' ' + regNameToAddress(
-                args[2], i + 1)
-
-            # append to instruction list
-            instrl.append(ins)
-
-        if error:
-            raise SyntaxError(consolePrefix(i + 1) + "Invalid argument(s).")
     print(instrl)
 
+
+def generateBinaryInstr(s, opcode, instrLength, line):
+    # or - 00011
+    ins = opcode
+    args = s[instrLength:].replace(' ', '').split(',')
+
+    # check argument count
+    if len(args) != 3:
+        raise SyntaxError(consolePrefix(line) + "Invalid argument(s).")
+
+    # generate instruction
+    ins += ' ' + regNameToAddress(args[0], line) + ' ' + regNameToAddress(args[1],
+                                                                          line) + ' ' + regNameToAddress(
+        args[2], line)
+
+    # return instruction
+    return ins
+
+
+def generateImmediateInstr(s, opcode, instrLength, line):
+    ins = opcode
+    args = s[instrLength:].replace(' ', '').split(',')
+
+    # check argument count
+    if len(args) != 2:
+        raise SyntaxError(consolePrefix(line) + "Invalid argument(s).")
+
+    # FIXME 2's complement
+    # check if immediate is too large
+    if int(args[1]) > pow(2, 16) - 1:
+        raise SyntaxError(consolePrefix(line) + "Immediate too large")
+
+    # FIXME 2's complement
+    # generate instruction
+    ins += ' ' + regNameToAddress(args[0], line) + ' ' + format(int(args[1]), '018b')
+
+    # return instruction
+    return ins
 
 
 def regNameToAddress(s, lineNumber):
@@ -167,7 +169,7 @@ def regNameToAddress(s, lineNumber):
         raise SyntaxError(consolePrefix(lineNumber) + "Register designation \"" + str(s) + "\" is invalid.")
     result = offset + regId
     if debug:
-        print(consolePrefix(lineNumber) + "Register " + str(s) + " is on address " + str(hex(result)))
+        print(consolePrefix(lineNumber) + "Reg " + str(s) + " is addressed " + str(hex(result)))
     return format(result, '09b')
 
 
