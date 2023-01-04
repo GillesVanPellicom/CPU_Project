@@ -9,8 +9,8 @@ ori r0, 12
 # this is another comment
 xor r0, v0, r1
 and r0, v0, r1
-not r0, v0
 inv r0, v0
+not r0, v0
 sll r0, v0
 sla r0, v0
 srl r0, v0

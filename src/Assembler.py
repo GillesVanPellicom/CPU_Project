@@ -41,44 +41,71 @@ def lexer(preparedFile):
             labels.append(s.replace(' ', ''))
 
         elif s.replace(' ', '') == "noop":
-            # noop - 00000
+            # noop - 00000 (nullary)
             # Append to instruction list
             instrl.append("00000 000000000 000000000 000000000")
 
         elif s.find('add ') != -1:
-            # add - 00001
+            # add - 00001 (binary)
             # Generate instruction and append to instruction list
             instrl.append(generateBinaryInstr(s, "00001", 3, i + 1))
 
         elif s.find('addi ') != -1:
-            # addi - 00010
+            # addi - 00010 (immediate)
             # append to instruction list
             instrl.append(generateImmediateInstr(s, "00010", 4, i + 1))
 
         elif s.find('xor ') != -1:
             # check for xor before or since find() is used
-            # xor - 00011
+            # xor - 00011 (binary)
             # Generate instruction and append to instruction list
             instrl.append(generateBinaryInstr(s, "00011", 3, i + 1))
 
         elif s.find('ori ') != -1:
-            # ori - 00100
+            # ori - 00100 (immediate)
             # Generate instruction and append to instruction list
             instrl.append(generateImmediateInstr(s, "00100", 3, i + 1))
 
         elif s.find('or ') != -1:
-            # or - 00101
+            # or - 00101 (binary)
             # Generate instruction and append to instruction list
             instrl.append(generateBinaryInstr(s, "00101", 2, i + 1))
 
         elif s.find('and ') != -1:
-            # and - 00110
+            # and - 00110 (binary)
             # Generate instruction and append to instruction list
             instrl.append(generateBinaryInstr(s, "00110", 3, i + 1))
-        elif s.find('not ') != -1:
-            # and - 00110
+
+        elif s.find('inv ') != -1:
+            # inv - 00111 (unary)
             # Generate instruction and append to instruction list
             instrl.append(generateUnaryInstr(s, "00111", 3, i + 1))
+
+        elif s.find('not ') != -1:
+            # not - 01000 (unary)
+            # Generate instruction and append to instruction list
+            instrl.append(generateUnaryInstr(s, "01000", 3, i + 1))
+
+        elif s.find('sll ') != -1:
+            # sll - 01001 (unary)
+            # Generate instruction and append to instruction list
+            instrl.append(generateUnaryInstr(s, "01001", 3, i + 1))
+
+        elif s.find('sla ') != -1:
+            # sla - 01010 (unary)
+            # Generate instruction and append to instruction list
+            instrl.append(generateUnaryInstr(s, "01010", 3, i + 1))
+
+        elif s.find('srl ') != -1:
+            # srl - 01011 (unary)
+            # Generate instruction and append to instruction list
+            instrl.append(generateUnaryInstr(s, "01011", 3, i + 1))
+
+        elif s.find('sra ') != -1:
+            # sra - 01100 (unary)
+            # Generate instruction and append to instruction list
+            instrl.append(generateUnaryInstr(s, "01100", 3, i + 1))
+
 
     print(instrl)
 
