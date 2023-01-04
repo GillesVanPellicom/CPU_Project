@@ -106,6 +106,15 @@ def lexer(preparedFile):
             # Generate instruction and append to instruction list
             instrl.append(generateUnaryInstr(s, "01100", 3, i + 1))
 
+        elif s.find('lmb ') != -1:
+            # lmb - 01101 (unary)
+            # Generate instruction and append to instruction list
+            instrl.append(generateUnaryInstr(s, "01101", 3, i + 1))
+
+        elif s.find('smb ') != -1:
+            # smb - 01110 (unary)
+            # Generate instruction and append to instruction list
+            instrl.append(generateUnaryInstr(s, "01110", 3, i + 1))
 
     print(instrl)
 
@@ -147,17 +156,18 @@ def generateImmediateInstr(s, opcode, instrLength, line):
     args = s[instrLength + 1:].replace(' ', '').split(',')
 
     # check argument count
-    if len(args) != 2:
+    if len(args) != 3:
         raise SyntaxError(consolePrefix(line) + "Invalid argument(s).")
 
     # FIXME 2's complement
     # check if immediate is too large
-    if int(args[1]) > pow(2, 16) - 1:
+    if int(args[2]) > pow(2, 16) - 1:
         raise SyntaxError(consolePrefix(line) + "Immediate too large")
 
     # FIXME 2's complement
     # generate instruction
-    ins += ' ' + regNameToAddress(args[0], line) + ' ' + format(int(args[1]), '018b')
+    ins += ' ' + regNameToAddress(args[0], line) + ' ' + regNameToAddress(args[1], line) + ' ' + format(int(args[2]),
+                                                                                                        '018b')
 
     # return instruction
     return ins
