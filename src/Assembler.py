@@ -2,7 +2,7 @@
 
 import re
 
-debug = True
+debug = False
 
 
 def prepareFile(fileSrc):
@@ -17,8 +17,7 @@ def prepareFile(fileSrc):
             toRemove.append(i)
 
         # remove possible newline escapes
-        if "\n" in arr[i]:
-            arr[i] = arr[i].replace("\n", '')
+        arr[i] = arr[i].replace("\n", '')
 
         # mark empty lines for removal
         if len(arr[i]) == 0:
@@ -30,15 +29,21 @@ def prepareFile(fileSrc):
     return arr
 
 
-def lexer(preparedFile):
-    labels = []
+def parse(preparedFile):
+    labels = {}
+    for i in range(len(preparedFile)):
+        s = preparedFile[i]
+        if s.find(':') != -1:
+            # label
+            labels.update({s: i - len(labels)})
     instrl = []
     for i in range(len(preparedFile)):
         # FIXME correct line numbers
         s = preparedFile[i]
+
         if s.find(':') != -1:
-            # label
-            labels.append(s.replace(' ', ''))
+            # label already processed
+            continue
 
         elif s.replace(' ', '') == "noop":
             # noop - 00000 (nullary)
@@ -117,6 +122,7 @@ def lexer(preparedFile):
             instrl.append(generateUnaryInstr(s, "01110", 3, i + 1))
 
     print(instrl)
+    print(labels)
 
 
 def generateBinaryInstr(s, opcode, instrLength, line):
@@ -247,7 +253,7 @@ def consolePrefix(lineNumber):
 def main():
     a = prepareFile("../resources/test.asm")
     print(a)
-    lexer(a)
+    parse(a)
 
 
 if __name__ == '__main__':

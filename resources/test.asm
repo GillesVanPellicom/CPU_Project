@@ -15,9 +15,10 @@ sll r0, v0
 sla r0, v0
 srl r0, v0
 sra r0, v0
-lmb,
+
 # this is a comment again
 test2:
 jmp test1
 jr r0
+test3:
 jal test2
