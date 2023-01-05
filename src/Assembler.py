@@ -180,8 +180,8 @@ def generateImmediateInstr(s, opcode, instrLength, line):
 
 
 def regNameToAddress(s, lineNumber):
-    # FIXME better regex
-    match = re.match(r"([a-z]+)([0-9]+)", s, re.I)
+
+    match = re.match(r"([a-z])([0-9]?[0-9])", s, re.I)
     error = False
     offset = 0
     regId = 0
@@ -221,25 +221,26 @@ def regNameToAddress(s, lineNumber):
                 offset = 1
                 # registry id must be [0; 31]
                 if not (0 <= regId <= 31):
-                    error = True
+                    raise SyntaxError(consolePrefix(lineNumber) + "Registers of type 'r' must be [0; 31].")
+
             case 'v':
                 # result registers v0-v7 (0x021 - 0x028)
                 offset = 33
                 # registry id must be [0; 7]
                 if not (0 <= regId <= 7):
-                    error = True
+                    raise SyntaxError(consolePrefix(lineNumber) + "Registers of type 'v' must be [0; 7].")
+
             case 'a':
                 # argument registers a0-a7 (0x029 - 0x030)
                 offset = 41
                 # registry id must be [0; 7]
                 if not (0 <= regId <= 7):
-                    error = True
+                    raise SyntaxError(consolePrefix(lineNumber) + "Registers of type 'a' must be [0; 7].")
+
             case _:
                 # invalid register designation
-                error = True
+                raise SyntaxError(consolePrefix(lineNumber) + "Register designation \"" + str(s) + "\" is invalid.")
 
-    if error:
-        raise SyntaxError(consolePrefix(lineNumber) + "Register designation \"" + str(s) + "\" is invalid.")
     result = offset + regId
     if debug:
         print(consolePrefix(lineNumber) + "Reg " + str(s) + " is addressed " + str(hex(result)))
